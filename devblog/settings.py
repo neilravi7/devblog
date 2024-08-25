@@ -40,6 +40,7 @@ if RENDER_EXTERNAL_HOSTNAME:
 
 PROJECT_APPS = [
     'accounts.apps.AccountsConfig',
+    'post.apps.PostConfig',
 ]
 
 THIRD_PARTY_APPS = [
