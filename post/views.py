@@ -1,6 +1,6 @@
 from rest_framework import generics
-from .models import Post
-from .serializers import PostSerializer
+from .models import Post, Comment, Like
+from .serializers import PostSerializer, CommentSerializer, LikeSerializer, NestedPostSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
 class PostCreateView(generics.CreateAPIView):
@@ -31,5 +31,39 @@ class PublicPostListView(generics.ListAPIView):
     """
     permission_classes = [AllowAny]
     queryset = Post.objects.all()
-    serializer_class = PostSerializer
+    serializer_class = NestedPostSerializer
 
+
+class CommentCreateView(generics.CreateAPIView):
+    """ to comment to post.
+    """ 
+    permission_classes = [IsAuthenticated]
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+
+    def perform_create(self, serializer):
+        post = Post.objects.get(pk=self.kwargs['post_id'])
+        serializer.save(user=self.request.user, post=post)
+
+
+class CommentRemoveView(generics.DestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    
+
+class LikeCreateView(generics.CreateAPIView):
+    """to like a post"""
+    permission_classes = [IsAuthenticated]
+    queryset = Like.objects.all()
+    serializer_class = LikeSerializer
+
+    def perform_create(self, serializer):
+        post = Post.objects.get(pk=self.kwargs['post_id'])
+        serializer.save(user=self.request.user, post=post)
+
+
+class LikeRemoveView(generics.DestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Like.objects.all()
+    serializer_class = LikeSerializer

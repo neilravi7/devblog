@@ -1,8 +1,15 @@
 from django.urls import path
-from .views import PostCreateView, PostView, PublicPostListView
+from . import views
 
 urlpatterns = [
-    path('posts', PublicPostListView.as_view(), name='post-list'),
-    path('post/create', PostCreateView.as_view(), name='post-create'),
-    path('post/<uuid:pk>', PostView.as_view(), name='post-view'),
+    # Post API's
+    path('posts', views.PublicPostListView.as_view(), name='post-list'),
+    path('post/create', views.PostCreateView.as_view(), name='post-create'),
+    path('post/<uuid:pk>', views.PostView.as_view(), name='post-view'),
+    
+
+    path('posts/<uuid:post_id>/comments', views.CommentCreateView.as_view(), name='comment-create'),
+    path('posts/comments/<uuid:pk>', views.CommentRemoveView.as_view(), name='comment-remove'),
+    path('posts/<uuid:post_id>/likes', views.LikeCreateView.as_view(), name='like-create'),
+    path('posts/likes/<uuid:pk>', views.LikeRemoveView.as_view(), name='like-remove'),
 ]
