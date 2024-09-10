@@ -25,6 +25,13 @@ class PostView(generics.RetrieveUpdateDestroyAPIView):
         """Ensure that the author remains the authenticated user when updating a post."""
         serializer.save(author=self.request.user)
 
+class PostDetailView(generics.RetrieveAPIView):
+    """ Handles retrieving a specific post.
+    """
+    permission_classes = [IsAuthenticated]
+    queryset = Post.objects.all()
+    serializer_class = NestedPostSerializer
+
 
 class PublicPostListView(generics.ListAPIView):
     """Handles listing all posts

@@ -1,6 +1,9 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from .models import Profile, Followers
+from post.serializers import NestedPostSerializer
+from post.models import Post
 # from django.contrib.auth.password_validation import validate_password
 
 class UserSerializer(serializers.ModelSerializer):
@@ -52,26 +55,61 @@ class LoginSerializer(TokenObtainPairSerializer):
     
     def validate(self, attrs):
         data = super().validate(attrs)
-
-        # Add your extra responses here
-        # data['email'] = self.user.email
-        # data['name'] = '{self.user.first_name} {self.user.last_name}'
-        # data['id'] = self.user.id
-
-        # data['groups'] = self.user.groups.values_list('name', flat=True)
+        data['userDetails'] = self.user.get_profile()       
+        data['success'] = True
         return data
 
 class UpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
-        fields = ['username', 'email', 'first_name', 'last_name']
+        fields = ['id', 'email', 'first_name', 'last_name']
         read_only_fields = ('id', 'email',)
 
     def update(self, instance, validated_data):
         # Exclude password fields from validated data
+
+        print("validated_data", validated_data)
+
         validated_data.pop('password1', None)
         validated_data.pop('password2', None)
         
         # Perform the usual update logic
         instance = super().update(instance, validated_data)
         return instance
+    
+
+class FollowerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Followers
+        fields = ['user']
+
+# All custom serializers for nesting data for user profile view
+
+class CustomFollowerSerializer(serializers.ModelSerializer):
+    follower = serializers.StringRelatedField()  # Display username or other details
+
+    class Meta:
+        model = Followers
+        fields = ['follower']
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ['bio', 'profile_image']
+
+class PostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = ['id', 'title', 'content', 'slug', 'postImage', 'created_at']
+
+User = get_user_model()
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    profile = ProfileSerializer(read_only=True)
+    peoples_you_follow = FollowerSerializer(source='followers', many=True, read_only=True)
+    peoples_following_you = FollowerSerializer(source='following', many=True, read_only=True)
+    user_posts = NestedPostSerializer(source='posts', many=True, read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['id', 'first_name', 'last_name', 'email', 'profile', 'peoples_you_follow', 'peoples_following_you', 'user_posts']

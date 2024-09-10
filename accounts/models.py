@@ -60,3 +60,47 @@ class User(BaseModel, AbstractUser, PermissionsMixin):
     
     def __unicode__(self):
         return self.id
+    
+    def get_profile(self):
+        return {
+            "user_id":str(self.id),
+            "email":self.email,
+            "first_name":self.first_name,
+            "last_name":self.last_name,
+            "bio":self.profile.bio,
+            "profile_image":self.profile.profile_image
+        }
+    
+    # def get_user_post(self){
+    #     self.
+    # }
+    
+    
+class Profile(BaseModel, models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    bio = models.CharField(max_length=500, null=True, blank=True)
+    profile_image = models.URLField(max_length=300, null=True, blank=True)
+    address = models.CharField(max_length=150, null=True, blank=True)    
+
+    class Meta:
+        db_table = 'profile'
+
+    def __str__(self):
+        return f"{self.user.username}'s profile"
+    
+    def save(self, *args, **kwargs):
+        self.profile_image = 'https://placebeard.it/520x520'
+        return super(Profile, self).save(*args, **kwargs)
+
+
+class Followers(BaseModel, models.Model):
+    user = models.ForeignKey(User, related_name='following', on_delete=models.CASCADE)
+    follower = models.ForeignKey(User, related_name='followers', on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'followers'
+        unique_together = ('user', 'follower')
+
+    def __str__(self):
+        return f"{self.follower.username} follows {self.user.username}"
+
