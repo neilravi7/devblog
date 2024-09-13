@@ -6,6 +6,33 @@ from post.serializers import NestedPostSerializer
 from post.models import Post
 # from django.contrib.auth.password_validation import validate_password
 
+
+
+class FollowerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Followers
+        fields = ['user']
+
+# All custom serializers for nesting data for user profile view
+
+class CustomFollowerSerializer(serializers.ModelSerializer):
+    follower = serializers.StringRelatedField()  # Display username or other details
+
+    class Meta:
+        model = Followers
+        fields = ['follower']
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ['bio', 'profile_image']
+
+class PostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = ['id', 'title', 'content', 'slug', 'postImage', 'created_at']
+
+
 class UserSerializer(serializers.ModelSerializer):
     password1 = serializers.CharField(write_only=True)
     password2 = serializers.CharField(write_only=True)
@@ -60,47 +87,53 @@ class LoginSerializer(TokenObtainPairSerializer):
         return data
 
 class UpdateUserSerializer(serializers.ModelSerializer):
+    bio = serializers.CharField(max_length=120)
+    profile_image = serializers.URLField(max_length=300)
     class Meta:
         model = get_user_model()
-        fields = ['id', 'email', 'first_name', 'last_name']
+        fields = ['id', 'email', 'first_name', 'last_name', 'bio', 'profile_image']
         read_only_fields = ('id', 'email',)
 
     def update(self, instance, validated_data):
         # Exclude password fields from validated data
-
-        print("validated_data", validated_data)
-
         validated_data.pop('password1', None)
         validated_data.pop('password2', None)
-        
-        # Perform the usual update logic
+
+        instance.profile.bio = validated_data['bio']
+        instance.profile.profile_image = validated_data['profile_image']
+
+        instance.profile.save()        
         instance = super().update(instance, validated_data)
         return instance
     
+    def to_representation(self, instance):
+        # Get the default serialized data
+        data = super().to_representation(instance)
 
-class FollowerSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Followers
-        fields = ['user']
+        following = [
+            {
+                "id":following.user.id, 
+                "name":f'{following.user.first_name} {following.user.first_name}'
+            } for following in instance.following.all()
+        ]
 
-# All custom serializers for nesting data for user profile view
+        followers = [
+            {
+                "id":follower.user.id, 
+                "name":f'{follower.user.first_name} {follower.user.first_name}'
+            } for follower in instance.followers.all()
+        ]
 
-class CustomFollowerSerializer(serializers.ModelSerializer):
-    follower = serializers.StringRelatedField()  # Display username or other details
-
-    class Meta:
-        model = Followers
-        fields = ['follower']
-
-class ProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Profile
-        fields = ['bio', 'profile_image']
-
-class PostSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Post
-        fields = ['id', 'title', 'content', 'slug', 'postImage', 'created_at']
+        extra_data = {
+            "following":following,
+            "followers":followers,
+            "user_id":instance.id            
+        }
+        
+        # Merge extra data into the serialized data
+        data.update(extra_data)
+        
+        return data
 
 User = get_user_model()
 
