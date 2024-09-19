@@ -12,6 +12,11 @@ class FollowerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Followers
         fields = ['user']
+    
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["success"] = True
+        return data
 
 # All custom serializers for nesting data for user profile view
 
@@ -110,17 +115,19 @@ class UpdateUserSerializer(serializers.ModelSerializer):
         # Get the default serialized data
         data = super().to_representation(instance)
 
+        # List of Users whom followed by user.
         following = [
             {
                 "id":following.user.id, 
-                "name":f'{following.user.first_name} {following.user.first_name}'
+                "name":f'{following.user.first_name} {following.user.last_name}'
             } for following in instance.following.all()
         ]
-
+        
+        # List of Users whom followed user.
         followers = [
             {
                 "id":follower.user.id, 
-                "name":f'{follower.user.first_name} {follower.user.first_name}'
+                "name":f'{follower.user.first_name} {follower.user.last_name}'
             } for follower in instance.followers.all()
         ]
 

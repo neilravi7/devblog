@@ -3,7 +3,7 @@ from rest_framework import serializers
 from .models import Post, Comment, Like
 from taggit.serializers import TagListSerializerField, TaggitSerializer
 from taggit.models import Tag
-from .models import Category
+from .models import Category, Like
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -72,7 +72,7 @@ User = get_user_model()
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email']
+        fields = ['id', 'first_name', 'last_name', 'email']
 
 class CustomCommentSerializer(serializers.ModelSerializer):
     user = CustomUserSerializer(read_only=True)
@@ -98,3 +98,9 @@ class NestedPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ['id', 'title', 'content', 'slug', 'author', 'postImage', 'comments', 'likes', 'category', 'tags', 'created_at']
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        liked_by = [like.user.id for like in Like.objects.filter(post=instance)]
+        data["likedBy"] = liked_by
+        return data

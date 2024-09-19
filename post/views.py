@@ -28,9 +28,10 @@ class PostView(generics.RetrieveUpdateDestroyAPIView):
 class PostDetailView(generics.RetrieveAPIView):
     """ Handles retrieving a specific post.
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     queryset = Post.objects.all()
     serializer_class = NestedPostSerializer
+    lookup_field = 'slug'
 
 
 class PublicPostListView(generics.ListAPIView):

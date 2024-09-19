@@ -62,13 +62,30 @@ class User(BaseModel, AbstractUser, PermissionsMixin):
         return self.id
     
     def get_profile(self):
+        instance = User.objects.get(id=self.id);
+        
+        following = [
+            {
+                "id":following.user.id, 
+                "name":f'{following.user.first_name} {following.user.last_name}'
+            } for following in instance.following.all()
+        ]
+
+        followers = [
+            {
+                "id":follower.user.id, 
+                "name":f'{follower.user.first_name} {follower.user.last_name}'
+            } for follower in instance.followers.all()
+        ]
         return {
             "user_id":str(self.id),
             "email":self.email,
             "first_name":self.first_name,
             "last_name":self.last_name,
             "bio":self.profile.bio,
-            "profile_image":self.profile.profile_image
+            "profile_image":self.profile.profile_image,
+            "following":following,
+            "followers":followers,
         }
     
     # def get_user_post(self){

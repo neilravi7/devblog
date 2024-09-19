@@ -105,10 +105,10 @@ class FollowUserView(generics.CreateAPIView):
         follower = self.request.user
 
         if follower.id == user_to_follow_id:
-            return Response({"error": "You cannot follow yourself."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "You cannot follow yourself.", "success":False}, status=status.HTTP_400_BAD_REQUEST)
 
         if Followers.objects.filter(user_id=user_to_follow_id, follower=follower).exists():
-            return Response({"error": "You are already following this user."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "You are already following this user.", "success":False }, status=status.HTTP_400_BAD_REQUEST)
 
         serializer.save(user_id=user_to_follow_id, follower=follower)
 
@@ -127,6 +127,6 @@ class UnfollowUserView(generics.DestroyAPIView):
         try:
             follow_instance = Followers.objects.get(user_id=user_to_unfollow_id, follower=follower)
             follow_instance.delete()
-            return Response({"message": "Successfully unfollowed the user."}, status=status.HTTP_204_NO_CONTENT)
+            return Response({"message": "Successfully unfollowed the user.", "success":True}, status=status.HTTP_204_NO_CONTENT)
         except Followers.DoesNotExist:
-            return Response({"error": "You are not following this user."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "You are not following this user.", "success":False}, status=status.HTTP_400_BAD_REQUEST)
