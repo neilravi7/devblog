@@ -1,4 +1,5 @@
 from rest_framework import generics
+from django.db.models import Q
 from .models import Post, Comment, Like
 from .serializers import PostSerializer, CommentSerializer, LikeSerializer, NestedPostSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -40,6 +41,20 @@ class PublicPostListView(generics.ListAPIView):
     permission_classes = [AllowAny]
     queryset = Post.objects.all()
     serializer_class = NestedPostSerializer
+
+    def get_queryset(self):
+        """Override the queryset to provide search functionality."""
+        queryset = super().get_queryset()
+        search_query = self.request.query_params.get('q', None)
+        if search_query:
+            queryset = queryset.filter(
+                Q(title__icontains=search_query) |
+                Q(content__icontains=search_query) |
+                Q(author__first_name__icontains=search_query) |
+                Q(author__last_name__icontains=search_query) |
+                Q(category__name__icontains=search_query)
+            )
+        return queryset
 
 
 class CommentCreateView(generics.CreateAPIView):
