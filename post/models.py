@@ -3,6 +3,8 @@ from django.db import models
 from django.utils.text import slugify
 from accounts.models import BaseModel
 from taggit.managers import TaggableManager
+from random import randint
+
 
 class Category(BaseModel, models.Model):
     name = models.CharField(max_length=150, unique=True)
@@ -36,7 +38,8 @@ class Post(BaseModel, models.Model):
 
     
     def save(self, *args, **kwargs):
-        self.postImage = f'https://picsum.photos/680/320' 
+        self.postImage = f"https://picsum.photos/id/{randint(1,1025)}/680/320"
+
         self.slug = slugify(self.title)
         return super(Post, self).save(*args, **kwargs)
     
