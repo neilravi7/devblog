@@ -27,12 +27,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 # django-taggit setting
 TAGGIT_CASE_INSENSITIVE = True
 
-ALLOWED_HOSTS = ['talesblog.netlify.app', 'dpg-crq05ut6l47c73ar7qmg-a']
+ALLOWED_HOSTS = ['talesblog.netlify.app', 'dpg-crq05ut6l47c73ar7qmg-a', '127.0.0.1']
 
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
@@ -242,12 +242,15 @@ CORS_ALLOW_HEADERS = (
 
 CORS_ORIGIN_WHITELIST = (
     "https://talesblog.netlify.app",
+    "http://localhost:5173",
 )
 
 CSRF_TRUSTED_ORIGINS = [
     "https://talesblog.netlify.app",
+    "http://localhost:5173",
 ]
 
 CORS_ALLOWED_ORIGINS = [
     'https://talesblog.netlify.app',
+    "http://localhost:5173",
 ]
