@@ -29,7 +29,7 @@ class Category(BaseModel, models.Model):
 class Post(BaseModel, models.Model):
     slug = models.SlugField(null=True, blank=True)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='posts')
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=500)
     content = models.TextField()
     postImage = models.CharField(max_length=255, null=True, blank=True)
     tags = TaggableManager()
